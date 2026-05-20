@@ -1,0 +1,59 @@
+[
+    {
+        "id": "6a0d88f7be987",
+        "name": "test",
+        "description": "test لعيون تركي",
+        "duration": "4m",
+        "durationSeconds": 240,
+        "endTimestamp": 1779272167,
+        "winnerCount": 1,
+        "participants": [
+            {
+                "id": "880450066438033479",
+                "username": "nyp0",
+                "joinedAt": "2026-05-20 12:12:09"
+            }
+        ],
+        "winners": [
+            {
+                "id": "880450066438033479",
+                "username": "nyp0",
+                "joinedAt": "2026-05-20 12:12:09"
+            }
+        ],
+        "status": "ended",
+        "createdAt": "2026-05-20 12:12:07",
+        "endedAt": "2026-05-20 12:16:42"
+    },
+    {
+        "id": "6a0d845b3b189",
+        "name": "بسيب",
+        "description": "ddddd",
+        "duration": "2m",
+        "durationSeconds": 120,
+        "endTimestamp": 1779270867,
+        "winnerCount": 1,
+        "participants": [
+            {
+                "id": "880450066438033479",
+                "username": "nyp0",
+                "joinedAt": "2026-05-20 11:52:30"
+            },
+            {
+                "id": "767035148079464458",
+                "username": ".khr.",
+                "joinedAt": "2026-05-20 11:52:35"
+            }
+        ],
+        "winners": [
+            {
+                "id": "767035148079464458",
+                "username": ".khr.",
+                "joinedAt": "2026-05-20 11:52:35"
+            }
+        ],
+        "status": "ended",
+        "createdAt": "2026-05-20 11:52:27",
+        "endedAt": "2026-05-20 11:54:36"
+    }
+]

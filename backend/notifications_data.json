@@ -1,0 +1,612 @@
+[
+    {
+        "id": "6a0d8a0a32506",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 12:16:42"
+    },
+    {
+        "id": "6a0d892940fed",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: test",
+        "link": "",
+        "read": false,
+        "createdAt": "2026-05-20 12:12:57"
+    },
+    {
+        "id": "6a0d891b35f2d",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 12:12:43"
+    },
+    {
+        "id": "6a0d86577ebff",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 12:00:55"
+    },
+    {
+        "id": "6a0d84dd00eef",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:54:37"
+    },
+    {
+        "id": "6a0d8471352d4",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:52:49"
+    },
+    {
+        "id": "6a0d8461afa86",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:52:33"
+    },
+    {
+        "id": "6a0d836d5eaa3",
+        "userId": "880450066438033479",
+        "type": "accepted",
+        "title": "✅ حالة طلب التقديم",
+        "message": "تم قبول طلبك.",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:48:29"
+    },
+    {
+        "id": "6a0d83608462c",
+        "userId": "880450066438033479",
+        "type": "info",
+        "title": "🔵 حالة طلب التقديم",
+        "message": "طلبك قيد المعالجة.",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:48:16"
+    },
+    {
+        "id": "6a0d8356aa2c7",
+        "userId": "880450066438033479",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب family بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:48:06"
+    },
+    {
+        "id": "6a0d833b2597a",
+        "userId": "880450066438033479",
+        "type": "rejected",
+        "title": "❌ حالة طلب التقديم",
+        "message": "gg bro",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:47:39"
+    },
+    {
+        "id": "6a0d83042c232",
+        "userId": "880450066438033479",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب trader بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-20 11:46:44"
+    },
+    {
+        "id": "6a0c75a144ae1",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: new test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 16:37:21"
+    },
+    {
+        "id": "6a0c75682dd8c",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: new test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 16:36:24"
+    },
+    {
+        "id": "6a0c5a3e5a3c1",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: لعيونك تركي",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:40:30"
+    },
+    {
+        "id": "6a0c5a2409f2c",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: لعيونك تركي",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:40:04"
+    },
+    {
+        "id": "6a0c59ff92a6b",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: لعيونك تركي",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:39:27"
+    },
+    {
+        "id": "6a0c59f52a0c8",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: لعيونك تركي",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:39:17"
+    },
+    {
+        "id": "6a0c57f3aee58",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: tessst",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:30:43"
+    },
+    {
+        "id": "6a0c57e30276c",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: tessst",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:30:27"
+    },
+    {
+        "id": "6a0c57d573ea1",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: tessst",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:30:13"
+    },
+    {
+        "id": "6a0c51e7868f7",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بببب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:04:55"
+    },
+    {
+        "id": "6a0c51acc97a4",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بببب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 14:03:56"
+    },
+    {
+        "id": "6a0c3e6f3e2a0",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بطاططس",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:41:51"
+    },
+    {
+        "id": "6a0c3e25eb5ea",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بطاططس",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:40:37"
+    },
+    {
+        "id": "6a0c3e1408622",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بطاططس",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:40:20"
+    },
+    {
+        "id": "6a0c3ddb9758e",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بندر بطاطا",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:39:23"
+    },
+    {
+        "id": "6a0c3d99844bc",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بندر بطاطا",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:38:17"
+    },
+    {
+        "id": "6a0c3d96a26da",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بندر بطاطا",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:38:14"
+    },
+    {
+        "id": "6a0c3d3420d8c",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بسيبdqd",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:36:36"
+    },
+    {
+        "id": "6a0c3c90b419d",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بسيبdqd",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:52"
+    },
+    {
+        "id": "6a0c3c7e71ec9",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: بسيبdqd",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:34"
+    },
+    {
+        "id": "6a0c3c5e327d2",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: 1Car - $500K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:02"
+    },
+    {
+        "id": "6a0c3c5e312a5",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: 8000K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:02"
+    },
+    {
+        "id": "6a0c3c5e2db82",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:02"
+    },
+    {
+        "id": "6a0c3c5e2a6e9",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:02"
+    },
+    {
+        "id": "6a0c3c5e28fc2",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: ففففففففففففففففففففففف",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:33:02"
+    },
+    {
+        "id": "6a0c3c42d03ca",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء: 1Car - $500K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:32:34"
+    },
+    {
+        "id": "6a0c3c42cfcd0",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: testset",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:32:34"
+    },
+    {
+        "id": "6a0c3c42ce6c2",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: $100K WnashTime Money",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:32:34"
+    },
+    {
+        "id": "6a0c3c42cdbdb",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "فزت في: 8000K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:32:34"
+    },
+    {
+        "id": "6a0c3b0ccdb86",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: ففففففففففففففففففففففف",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:27:24"
+    },
+    {
+        "id": "6a0c3ae20582b",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: ففففففففففففففففففففففف",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:26:42"
+    },
+    {
+        "id": "6a0c3ae1f244e",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: ففففففففففففففففففففففف",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:26:41"
+    },
+    {
+        "id": "6a0c3abb37eff",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:26:03"
+    },
+    {
+        "id": "6a0c3a91dd446",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: 1Car - $500K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:21"
+    },
+    {
+        "id": "6a0c3a91d90af",
+        "userId": "767035148079464458",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:21"
+    },
+    {
+        "id": "6a0c3a91d793d",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: 8000K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:21"
+    },
+    {
+        "id": "6a0c3a91d3b9e",
+        "userId": "767035148079464458",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: test",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:21"
+    },
+    {
+        "id": "6a0c3a7eed1ab",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:02"
+    },
+    {
+        "id": "6a0c3a7ee56f0",
+        "userId": "880450066438033479",
+        "type": "giveaway",
+        "title": "غيفو واي جديد",
+        "message": "تم انشاء غيفو واي: بسيب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:25:02"
+    },
+    {
+        "id": "6a0c3a620d394",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: $100K WnashTime Money",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:24:34"
+    },
+    {
+        "id": "6a0c3a620afe8",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: testset",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:24:34"
+    },
+    {
+        "id": "6a0c3a620884b",
+        "userId": "880450066438033479",
+        "type": "winner",
+        "title": "تهانينا! لقد فزت",
+        "message": "لقد فزت في غيفو واي: 8000K",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-19 12:24:34"
+    },
+    {
+        "id": "6a0b72a047400",
+        "userId": "767035148079464458",
+        "type": "accepted",
+        "title": "✅ حالة طلب التقديم",
+        "message": "هذا فقط تست يا ابو الحبايب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:12:16"
+    },
+    {
+        "id": "6a0b727b3826d",
+        "userId": "767035148079464458",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب leader بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:11:39"
+    },
+    {
+        "id": "6a0b70e5453d8",
+        "userId": "767035148079464458",
+        "type": "rejected",
+        "title": "❌ تم رفض طلبك",
+        "message": "نأسف، تم رفض طلب التقديم الخاص بك.\nملاحظة الإدارة: لاسف مرفوض يا ايفانوف النوب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:04:53"
+    },
+    {
+        "id": "6a0b70c673a3c",
+        "userId": "767035148079464458",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب trader بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:04:22"
+    },
+    {
+        "id": "6a0b7042d4b3f",
+        "userId": "880450066438033479",
+        "type": "accepted",
+        "title": "✅ تم قبول طلبك!",
+        "message": "تهانينا! تم قبول طلب التقديم الخاص بك.\nملاحظة الإدارة: بببببببببببببببببببببببببببببببببببببببببببببببببببببب",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:02:10"
+    },
+    {
+        "id": "6a0b703132d41",
+        "userId": "880450066438033479",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب designer بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 22:01:53"
+    },
+    {
+        "id": "6a0b6f4f7d16a",
+        "userId": "880450066438033479",
+        "type": "application",
+        "title": "📋 تم استلام طلبك",
+        "message": "تم تقديم طلب leader بنجاح!",
+        "link": "",
+        "read": true,
+        "createdAt": "2026-05-18 21:58:07"
+    }
+]
