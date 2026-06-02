@@ -1,7 +1,9 @@
 <?php
+date_default_timezone_set('Asia/Riyadh'); // ضبط الوقت حسب السعودية
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -19,29 +21,20 @@ if (!file_exists($visitsFile)) {
     file_put_contents($visitsFile, json_encode(['visits' => [], 'daily' => []]));
 }
 
-// تسجيل زيارة + تحديث آخر ظهور (يُستدعى من أي صفحة في الموقع)
-function recordVisitAndUpdate($discordId = null) {
-    global $visitsFile, $membersFile;
-    // تسجيل الزيارة العامة
+// دالة تسجيل الزيارة (مرة واحدة لكل جلسة يومياً)
+function recordDailyVisit() {
+    global $visitsFile;
     $vdata = json_decode(file_get_contents($visitsFile), true);
     $today = date('Y-m-d');
-    $vdata['visits'][] = ['time' => date('Y-m-d H:i:s'), 'ip' => $_SERVER['REMOTE_ADDR'] ?? ''];
-    $vdata['daily'][$today] = ($vdata['daily'][$today] ?? 0) + 1;
-    if (count($vdata['visits']) > 1000) $vdata['visits'] = array_slice($vdata['visits'], -1000);
-    file_put_contents($visitsFile, json_encode($vdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-    // تحديث آخر ظهور للعضو إذا تم تمرير معرفه
-    if ($discordId) {
-        $mdata = json_decode(file_get_contents($membersFile), true);
-        foreach ($mdata['members'] as &$m) {
-            if ($m['discordId'] === $discordId) {
-                $m['lastSeen'] = date('Y-m-d H:i:s');
-                $m['visits'] = ($m['visits'] ?? 0) + 1;
-                break;
-            }
-        }
-        file_put_contents($membersFile, json_encode($mdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    // نستخدم session ID لمنع التكرار المتعدد لنفس المستخدم في نفس اليوم
+    session_start();
+    $sessionKey = 'visit_recorded_' . $today;
+    if (!isset($_SESSION[$sessionKey])) {
+        $vdata['daily'][$today] = ($vdata['daily'][$today] ?? 0) + 1;
+        $_SESSION[$sessionKey] = true;
+        file_put_contents($visitsFile, json_encode($vdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
+    session_write_close();
 }
 
 // GET – جلب الأعضاء والإحصائيات
@@ -51,9 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $today = date('Y-m-d');
     $onlineThreshold = date('Y-m-d H:i:s', strtotime('-5 minutes'));
 
-    // تحديث حالة المتصلين (بدون حظر)
     foreach ($members['members'] as &$m) {
         $m['isOnline'] = isset($m['lastSeen']) && $m['lastSeen'] >= $onlineThreshold;
+        // تحويل lastSeen إلى timestamp للفرونت
+        $m['lastSeenTimestamp'] = isset($m['lastSeen']) ? strtotime($m['lastSeen']) : null;
     }
 
     echo json_encode([
@@ -66,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit();
 }
 
-// POST – تسجيل عضو جديد أو تحديث آخر ظهور له
+// POST – تسجيل/تحديث عضو (عند تسجيل الدخول أو عند فتح أي صفحة)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $discordId = $input['discordId'] ?? '';
@@ -76,12 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    // تسجيل الزيارة اليومية (مرة واحدة لكل جلسة)
+    recordDailyVisit();
+
     $members = json_decode(file_get_contents($membersFile), true);
     $found = false;
     foreach ($members['members'] as &$m) {
         if ($m['discordId'] === $discordId) {
             // تحديث بيانات العضو الموجود
             $m['username'] = $input['username'] ?? $m['username'];
+            $m['avatar'] = $input['avatar'] ?? $m['avatar'] ?? null;
             $m['lastSeen'] = date('Y-m-d H:i:s');
             $m['visits'] = ($m['visits'] ?? 0) + 1;
             $found = true;
@@ -93,10 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $members['members'][] = [
             'id' => 'user_' . uniqid(),
             'discordId' => $discordId,
-            'username' => $input['username'] ?? 'زائر',
+            'username' => $input['username'] ?? 'مستخدم',
             'discriminator' => $input['discriminator'] ?? '0000',
             'email' => $input['email'] ?? '',
-            'role' => 'member',          // كل الأعضاء الجدد "عضو"
+            'avatar' => $input['avatar'] ?? null,
+            'role' => 'member',      // الكل "عضو" – الرتبة تُحدد من الأدوار لاحقاً
             'visits' => 1,
             'lastSeen' => date('Y-m-d H:i:s'),
             'joinedAt' => date('Y-m-d'),
@@ -105,29 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     file_put_contents($membersFile, json_encode($members, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-    // تسجيل الزيارة العامة أيضاً
-    recordVisitAndUpdate($discordId);
-
     echo json_encode(['success' => true]);
     exit();
 }
 
-// PUT – تحديث الرتبة فقط (لا حظر)
-if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $members = json_decode(file_get_contents($membersFile), true);
-    foreach ($members['members'] as &$m) {
-        if ($m['id'] === ($input['id'] ?? '')) {
-            if (isset($input['role'])) $m['role'] = $input['role'];
-            break;
-        }
-    }
-    file_put_contents($membersFile, json_encode($members, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    echo json_encode(['success' => true]);
-    exit();
-}
-
-// أي طريقة أخرى
 http_response_code(405);
 echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 ?>
