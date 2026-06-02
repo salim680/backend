@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -19,102 +19,106 @@ if (!file_exists($visitsFile)) {
     file_put_contents($visitsFile, json_encode(['visits' => [], 'daily' => []]));
 }
 
-function recordVisit() {
-    global $visitsFile;
-    $data = json_decode(file_get_contents($visitsFile), true);
+// تسجيل زيارة + تحديث آخر ظهور (يُستدعى من أي صفحة في الموقع)
+function recordVisitAndUpdate($discordId = null) {
+    global $visitsFile, $membersFile;
+    // تسجيل الزيارة العامة
+    $vdata = json_decode(file_get_contents($visitsFile), true);
     $today = date('Y-m-d');
-    $data['visits'][] = [
-        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-        'time' => date('Y-m-d H:i:s'),
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-    ];
-    $data['daily'][$today] = ($data['daily'][$today] ?? 0) + 1;
-    if (count($data['visits']) > 1000) $data['visits'] = array_slice($data['visits'], -1000);
-    file_put_contents($visitsFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    $vdata['visits'][] = ['time' => date('Y-m-d H:i:s'), 'ip' => $_SERVER['REMOTE_ADDR'] ?? ''];
+    $vdata['daily'][$today] = ($vdata['daily'][$today] ?? 0) + 1;
+    if (count($vdata['visits']) > 1000) $vdata['visits'] = array_slice($vdata['visits'], -1000);
+    file_put_contents($visitsFile, json_encode($vdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    // تحديث آخر ظهور للعضو إذا تم تمرير معرفه
+    if ($discordId) {
+        $mdata = json_decode(file_get_contents($membersFile), true);
+        foreach ($mdata['members'] as &$m) {
+            if ($m['discordId'] === $discordId) {
+                $m['lastSeen'] = date('Y-m-d H:i:s');
+                $m['visits'] = ($m['visits'] ?? 0) + 1;
+                break;
+            }
+        }
+        file_put_contents($membersFile, json_encode($mdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
 }
 
+// GET – جلب الأعضاء والإحصائيات
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $members = json_decode(file_get_contents($membersFile), true);
     $visits = json_decode(file_get_contents($visitsFile), true);
     $today = date('Y-m-d');
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
     $onlineThreshold = date('Y-m-d H:i:s', strtotime('-5 minutes'));
-    $weekAgo = date('Y-m-d', strtotime('-7 days'));
 
-    $onlineMembers = array_filter($members['members'] ?? [], fn($m) => ($m['lastSeen'] ?? '') >= $onlineThreshold && ($m['status'] ?? '') !== 'banned');
-    $newThisWeek = array_filter($members['members'] ?? [], fn($m) => ($m['joinedAt'] ?? '') >= $weekAgo);
-    $bannedCount = count(array_filter($members['members'] ?? [], fn($m) => ($m['status'] ?? '') === 'banned'));
-    $rolesCount = count(array_unique(array_column($members['members'] ?? [], 'role')));
+    // تحديث حالة المتصلين (بدون حظر)
+    foreach ($members['members'] as &$m) {
+        $m['isOnline'] = isset($m['lastSeen']) && $m['lastSeen'] >= $onlineThreshold;
+    }
 
     echo json_encode([
         'members' => $members['members'] ?? [],
         'stats' => [
             'total' => count($members['members'] ?? []),
-            'todayVisits' => $visits['daily'][$today] ?? 0,
-            'yesterdayVisits' => $visits['daily'][$yesterday] ?? 0,
-            'online' => count($onlineMembers),
-            'newThisWeek' => count($newThisWeek),
-            'banned' => $bannedCount,
-            'roles' => $rolesCount
+            'todayVisits' => $visits['daily'][$today] ?? 0
         ]
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit();
 }
 
+// POST – تسجيل عضو جديد أو تحديث آخر ظهور له
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
-    $members = json_decode(file_get_contents($membersFile), true);
     $discordId = $input['discordId'] ?? '';
+    if (!$discordId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'discordId مطلوب']);
+        exit();
+    }
+
+    $members = json_decode(file_get_contents($membersFile), true);
     $found = false;
     foreach ($members['members'] as &$m) {
         if ($m['discordId'] === $discordId) {
+            // تحديث بيانات العضو الموجود
             $m['username'] = $input['username'] ?? $m['username'];
             $m['lastSeen'] = date('Y-m-d H:i:s');
             $m['visits'] = ($m['visits'] ?? 0) + 1;
-            $m['status'] = 'online';
             $found = true;
             break;
         }
     }
     if (!$found) {
+        // إضافة عضو جديد
         $members['members'][] = [
             'id' => 'user_' . uniqid(),
             'discordId' => $discordId,
             'username' => $input['username'] ?? 'زائر',
             'discriminator' => $input['discriminator'] ?? '0000',
             'email' => $input['email'] ?? '',
-            'role' => 'member',
-            'status' => 'online',
+            'role' => 'member',          // كل الأعضاء الجدد "عضو"
             'visits' => 1,
-            'activityScore' => 0,
-            'totalTimeSpent' => 0,
-            'giveawayWins' => 0,
-            'applications' => 0,
             'lastSeen' => date('Y-m-d H:i:s'),
             'joinedAt' => date('Y-m-d'),
-            'linkedAt' => date('Y-m-d'),
-            'lastPage' => $input['page'] ?? '/',
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            'browser' => $input['browser'] ?? 'Unknown',
-            'device' => $input['device'] ?? 'Unknown',
-            'avatarColor' => 'hsl(' . rand(0, 360) . ', 60%, 55%)',
-            'notes' => ''
+            'avatarColor' => 'hsl(' . rand(0, 360) . ', 60%, 55%)'
         ];
     }
     file_put_contents($membersFile, json_encode($members, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    recordVisit();
+
+    // تسجيل الزيارة العامة أيضاً
+    recordVisitAndUpdate($discordId);
+
     echo json_encode(['success' => true]);
     exit();
 }
 
+// PUT – تحديث الرتبة فقط (لا حظر)
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = json_decode(file_get_contents('php://input'), true);
     $members = json_decode(file_get_contents($membersFile), true);
     foreach ($members['members'] as &$m) {
         if ($m['id'] === ($input['id'] ?? '')) {
-            if ($input['action'] === 'ban') $m['status'] = 'banned';
-            elseif ($input['action'] === 'unban') $m['status'] = 'online';
-            elseif ($input['action'] === 'change_role') $m['role'] = $input['role'];
+            if (isset($input['role'])) $m['role'] = $input['role'];
             break;
         }
     }
@@ -123,15 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $members = json_decode(file_get_contents($membersFile), true);
-    $members['members'] = array_values(array_filter($members['members'], fn($m) => $m['id'] !== ($input['id'] ?? '')));
-    file_put_contents($membersFile, json_encode($members, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    echo json_encode(['success' => true]);
-    exit();
-}
-
+// أي طريقة أخرى
 http_response_code(405);
 echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 ?>
