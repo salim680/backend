@@ -6,11 +6,9 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
-$DATA_DIR     = __DIR__ . '/data/';
-$MEMBERS_FILE = $DATA_DIR . 'members.json';
-$VISITS_FILE  = $DATA_DIR . 'visits.json';
-
-if (!is_dir($DATA_DIR)) mkdir($DATA_DIR, 0755, true);
+// الكتابة مباشرة في نفس المجلد (بدون /data/)
+$MEMBERS_FILE = __DIR__ . '/members_data.json';
+$VISITS_FILE  = __DIR__ . '/visits_data.json';
 
 function readJson($file) {
     if (!file_exists($file)) return [];
@@ -24,28 +22,14 @@ function writeJson($file, $data) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ===== DEBUG =====
-if ($method === 'GET' && isset($_GET['debug'])) {
-    echo json_encode([
-        '__dir'          => __DIR__,
-        'data_dir'       => $DATA_DIR,
-        'members_file'   => $MEMBERS_FILE,
-        'data_dir_exists'=> is_dir($DATA_DIR),
-        'members_exists' => file_exists($MEMBERS_FILE),
-        'visits_exists'  => file_exists($VISITS_FILE),
-        'is_writable'    => is_writable($DATA_DIR) || is_writable(__DIR__),
-        'dir_writable'   => is_writable(__DIR__),
-        'data_writable'  => is_dir($DATA_DIR) ? is_writable($DATA_DIR) : 'dir_not_exist',
-        'members_content'=> file_exists($MEMBERS_FILE) ? json_decode(file_get_contents($MEMBERS_FILE)) : null,
-    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    exit;
-}
-
+// ===== GET =====
 if ($method === 'GET') {
     $members     = readJson($MEMBERS_FILE);
     $visits      = readJson($VISITS_FILE);
     $todayVisits = $visits[date('Y-m-d')] ?? 0;
+
     usort($members, fn($a,$b) => strtotime($b['registeredAt']??'0') - strtotime($a['registeredAt']??'0'));
+
     echo json_encode([
         'success'     => true,
         'members'     => array_values($members),
@@ -55,8 +39,9 @@ if ($method === 'GET') {
     exit;
 }
 
+// ===== POST =====
 if ($method === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $input  = json_decode(file_get_contents('php://input'), true);
     $userId = trim($input['userId'] ?? $input['discordId'] ?? '');
 
     if (!$userId) {
@@ -95,24 +80,14 @@ if ($method === 'POST') {
         if ($roles)    $members[$idx]['roles']     = $roles;
     }
 
-    $writeResult = file_put_contents(
-        $MEMBERS_FILE,
-        json_encode($members, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-        LOCK_EX
-    );
+    writeJson($MEMBERS_FILE, $members);
 
     $visits = readJson($VISITS_FILE);
     $visits[$today] = ($visits[$today] ?? 0) + 1;
     if (count($visits) > 90) { ksort($visits); $visits = array_slice($visits, -90, 90, true); }
-    file_put_contents($VISITS_FILE, json_encode($visits, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
+    writeJson($VISITS_FILE, $visits);
 
-    echo json_encode([
-        'success'      => true,
-        'write_result' => $writeResult,           // عدد البايتات المكتوبة أو false
-        'members_file' => $MEMBERS_FILE,
-        'members_count'=> count($members),
-        'userId'       => $userId,
-    ], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
