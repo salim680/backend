@@ -1,8 +1,4 @@
 <?php
-// =============================================
-// members.php - إدارة الأعضاء - عائلة العدلي
-// =============================================
-
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -10,14 +6,12 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
-// ===== مسارات الملفات (نفس مجلد باقي ملفات JSON) =====
 $DATA_DIR     = __DIR__ . '/data/';
 $MEMBERS_FILE = $DATA_DIR . 'members.json';
 $VISITS_FILE  = $DATA_DIR . 'visits.json';
 
 if (!is_dir($DATA_DIR)) mkdir($DATA_DIR, 0755, true);
 
-// ===== دوال مساعدة =====
 function readJson($file) {
     if (!file_exists($file)) return [];
     $data = json_decode(file_get_contents($file), true);
@@ -30,16 +24,28 @@ function writeJson($file, $data) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// =============================================
-// GET - قائمة الأعضاء
-// =============================================
+// ===== DEBUG =====
+if ($method === 'GET' && isset($_GET['debug'])) {
+    echo json_encode([
+        '__dir'          => __DIR__,
+        'data_dir'       => $DATA_DIR,
+        'members_file'   => $MEMBERS_FILE,
+        'data_dir_exists'=> is_dir($DATA_DIR),
+        'members_exists' => file_exists($MEMBERS_FILE),
+        'visits_exists'  => file_exists($VISITS_FILE),
+        'is_writable'    => is_writable($DATA_DIR) || is_writable(__DIR__),
+        'dir_writable'   => is_writable(__DIR__),
+        'data_writable'  => is_dir($DATA_DIR) ? is_writable($DATA_DIR) : 'dir_not_exist',
+        'members_content'=> file_exists($MEMBERS_FILE) ? json_decode(file_get_contents($MEMBERS_FILE)) : null,
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+}
+
 if ($method === 'GET') {
     $members     = readJson($MEMBERS_FILE);
     $visits      = readJson($VISITS_FILE);
     $todayVisits = $visits[date('Y-m-d')] ?? 0;
-
     usort($members, fn($a,$b) => strtotime($b['registeredAt']??'0') - strtotime($a['registeredAt']??'0'));
-
     echo json_encode([
         'success'     => true,
         'members'     => array_values($members),
@@ -49,13 +55,8 @@ if ($method === 'GET') {
     exit;
 }
 
-// =============================================
-// POST - تسجيل زيارة
-// =============================================
 if ($method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
-
-    // يقبل userId أو discordId (من auth.js)
     $userId = trim($input['userId'] ?? $input['discordId'] ?? '');
 
     if (!$userId) {
@@ -70,7 +71,6 @@ if ($method === 'POST') {
     $now      = date('c');
     $today    = date('Y-m-d');
 
-    // --- تحديث الأعضاء ---
     $members = readJson($MEMBERS_FILE);
     $idx = -1;
     foreach ($members as $i => $m) {
@@ -94,18 +94,25 @@ if ($method === 'POST') {
         if ($avatar)   $members[$idx]['avatar']   = $avatar;
         if ($roles)    $members[$idx]['roles']     = $roles;
     }
-    writeJson($MEMBERS_FILE, $members);
 
-    // --- تحديث زيارات اليوم ---
+    $writeResult = file_put_contents(
+        $MEMBERS_FILE,
+        json_encode($members, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+        LOCK_EX
+    );
+
     $visits = readJson($VISITS_FILE);
     $visits[$today] = ($visits[$today] ?? 0) + 1;
-    if (count($visits) > 90) {
-        ksort($visits);
-        $visits = array_slice($visits, -90, 90, true);
-    }
-    writeJson($VISITS_FILE, $visits);
+    if (count($visits) > 90) { ksort($visits); $visits = array_slice($visits, -90, 90, true); }
+    file_put_contents($VISITS_FILE, json_encode($visits, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
 
-    echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        'success'      => true,
+        'write_result' => $writeResult,           // عدد البايتات المكتوبة أو false
+        'members_file' => $MEMBERS_FILE,
+        'members_count'=> count($members),
+        'userId'       => $userId,
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
