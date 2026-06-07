@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $dataFile = __DIR__ . '/applications_data.json';
 $statusFile = __DIR__ . '/application_status.json';
 $uploadsDir = __DIR__ . '/../uploads/applications/';
+$frontendBase = 'https://aladlyfamily.kesug.com';
 
 // إنشاء الملفات
 if (!file_exists($dataFile)) {
@@ -52,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type'] ?? 'family';
     
-    // التحقق من حالة هذا النوع فقط
     $status = json_decode(file_get_contents($statusFile), true);
     $currentStatus = $status[$type] ?? 'open';
     
@@ -106,9 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'gameId' => $gameId,
         'discordId' => $discordId,
         'discordUsername' => $discordUsername,
-        'hoursImage' => $hoursImage ? '/uploads/applications/' . $hoursImage : null,
-        'historyImage' => $historyImage ? '/uploads/applications/' . $historyImage : null,
-        'extraImage' => $extraImage ? '/uploads/applications/' . $extraImage : null,
+        'hoursImage' => $hoursImage ? $frontendBase . '/uploads/applications/' . $hoursImage : null,
+        'historyImage' => $historyImage ? $frontendBase . '/uploads/applications/' . $historyImage : null,
+        'extraImage' => $extraImage ? $frontendBase . '/uploads/applications/' . $extraImage : null,
         'extraFields' => $extraFields,
         'status' => 'pending',
         'adminNote' => '',
@@ -127,7 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    // تغيير حالة نوع معين
     if (isset($input['action']) && $input['action'] === 'toggleTypeStatus') {
         $type = $input['type'] ?? 'family';
         $newStatus = $input['status'] ?? 'open';
@@ -140,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         exit();
     }
     
-    // تحديث طلب معين
     if (isset($input['id'])) {
         $applications = json_decode(file_get_contents($dataFile), true);
         if (!is_array($applications)) $applications = [];
