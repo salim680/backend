@@ -12,9 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// ========== الإعدادات ==========
-define('SITE_BASE_URL', 'https://aladlyfamily.kesug.com'); // رابط موقعك على InfinityFree
-
 $dataFile = __DIR__ . '/applications_data.json';
 $statusFile = __DIR__ . '/application_status.json';
 $uploadsDir = __DIR__ . '/../uploads/applications/';
@@ -55,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type'] ?? 'family';
     
+    // التحقق من حالة هذا النوع فقط
     $status = json_decode(file_get_contents($statusFile), true);
     $currentStatus = $status[$type] ?? 'open';
     
@@ -74,26 +72,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $historyImage = null;
     $extraImage = null;
     
-    // رفع الصور مع حفظ الرابط الكامل
     if (isset($_FILES['hoursImage']) && $_FILES['hoursImage']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['hoursImage']['name'], PATHINFO_EXTENSION);
-        $fileName = 'hours_' . time() . '_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['hoursImage']['tmp_name'], $uploadsDir . $fileName);
-        $hoursImage = SITE_BASE_URL . '/uploads/applications/' . $fileName;
+        $hoursImage = 'hours_' . time() . '_' . uniqid() . '.' . $ext;
+        move_uploaded_file($_FILES['hoursImage']['tmp_name'], $uploadsDir . $hoursImage);
     }
     
     if (isset($_FILES['historyImage']) && $_FILES['historyImage']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['historyImage']['name'], PATHINFO_EXTENSION);
-        $fileName = 'history_' . time() . '_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['historyImage']['tmp_name'], $uploadsDir . $fileName);
-        $historyImage = SITE_BASE_URL . '/uploads/applications/' . $fileName;
+        $historyImage = 'history_' . time() . '_' . uniqid() . '.' . $ext;
+        move_uploaded_file($_FILES['historyImage']['tmp_name'], $uploadsDir . $historyImage);
     }
     
     if (isset($_FILES['extraImage']) && $_FILES['extraImage']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['extraImage']['name'], PATHINFO_EXTENSION);
-        $fileName = 'extra_' . time() . '_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['extraImage']['tmp_name'], $uploadsDir . $fileName);
-        $extraImage = SITE_BASE_URL . '/uploads/applications/' . $fileName;
+        $extraImage = 'extra_' . time() . '_' . uniqid() . '.' . $ext;
+        move_uploaded_file($_FILES['extraImage']['tmp_name'], $uploadsDir . $extraImage);
     }
     
     if (!$name || !$discordId) {
@@ -112,9 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'gameId' => $gameId,
         'discordId' => $discordId,
         'discordUsername' => $discordUsername,
-        'hoursImage' => $hoursImage,
-        'historyImage' => $historyImage,
-        'extraImage' => $extraImage,
+        'hoursImage' => $hoursImage ? '/mta-family/uploads/applications/' . $hoursImage : null,
+        'historyImage' => $historyImage ? '/mta-family/uploads/applications/' . $historyImage : null,
+        'extraImage' => $extraImage ? '/mta-family/uploads/applications/' . $extraImage : null,
         'extraFields' => $extraFields,
         'status' => 'pending',
         'adminNote' => '',
@@ -133,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $input = json_decode(file_get_contents('php://input'), true);
     
+    // تغيير حالة نوع معين
     if (isset($input['action']) && $input['action'] === 'toggleTypeStatus') {
         $type = $input['type'] ?? 'family';
         $newStatus = $input['status'] ?? 'open';
@@ -145,6 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         exit();
     }
     
+    // تحديث طلب معين
     if (isset($input['id'])) {
         $applications = json_decode(file_get_contents($dataFile), true);
         if (!is_array($applications)) $applications = [];
@@ -154,9 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
             if ($app['id'] === $input['id']) {
                 if (isset($input['status'])) $app['status'] = $input['status'];
                 if (isset($input['adminNote'])) $app['adminNote'] = $input['adminNote'];
-                if (isset($input['hoursImage'])) $app['hoursImage'] = $input['hoursImage'];
-                if (isset($input['historyImage'])) $app['historyImage'] = $input['historyImage'];
-                if (isset($input['extraImage'])) $app['extraImage'] = $input['extraImage'];
                 $app['updatedAt'] = date('Y-m-d H:i:s');
                 $found = true;
                 break;
