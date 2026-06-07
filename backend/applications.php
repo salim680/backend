@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $dataFile = __DIR__ . '/applications_data.json';
 $statusFile = __DIR__ . '/application_status.json';
 $uploadsDir = __DIR__ . '/../uploads/applications/';
-$frontendBase = 'https://aladlyfamily.kesug.com/uploads/applications/';
+$frontendBase = 'https://aladlyfamily.kesug.com';
 
 // إنشاء الملفات
 if (!file_exists($dataFile)) {
@@ -106,9 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'gameId' => $gameId,
         'discordId' => $discordId,
         'discordUsername' => $discordUsername,
-        'hoursImage' => $hoursImage ? $frontendBase . $hoursImage : null,
-        'historyImage' => $historyImage ? $frontendBase . $historyImage : null,
-        'extraImage' => $extraImage ? $frontendBase . $extraImage : null,
+        'hoursImage' => $hoursImage ? 'https://aladlyfamily.kesug.com/uploads/applications/' . $hoursImage : null,
+        'historyImage' => $historyImage ? 'https://aladlyfamily.kesug.com/uploads/applications/' . $historyImage : null,
+        'extraImage' => $extraImage ? 'https://aladlyfamily.kesug.com/uploads/applications/' . $extraImage : null,
         'extraFields' => $extraFields,
         'status' => 'pending',
         'adminNote' => '',
