@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $dataFile = __DIR__ . '/applications_data.json';
 $statusFile = __DIR__ . '/application_status.json';
 $uploadsDir = __DIR__ . '/../uploads/applications/';
-$frontendBase = 'https://aladlyfamily.kesug.com';
+$frontendBase = 'https://aladlyfamily.kesug.com/uploads/applications/';
 
 // إنشاء الملفات
 if (!file_exists($dataFile)) {
