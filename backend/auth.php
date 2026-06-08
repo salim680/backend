@@ -1,121 +1,167 @@
 <?php
-// auth.php - معالجة تسجيل الدخول عبر Discord
-require_once 'jwt.php';
+// =============================================
+// معالج مصادقة Discord OAuth2 - نسخة مصلحة
+// =============================================
 
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// ========== إعدادات Discord (سرية) ==========
-define('DISCORD_CLIENT_ID', '1505715876287221860');
-define('DISCORD_CLIENT_SECRET', 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM');
-define('DISCORD_REDIRECT_URI', 'https://aladlyfamily.kesug.com/login.html');
-define('SESSION_DURATION', 86400); // 24 ساعة
+// ========== GET - تحديث الأدوار ==========
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'refreshRoles') {
+    sendError('هذه الوظيفة غير متاحة حالياً. استخدم تسجيل الدخول لتحديث الأدوار.', 400);
+}
 
-// ========== استقبال الكود من الفرونت اند ==========
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendError('طريقة الطلب غير مسموحة', 405);
+}
+
+// =============================================
+// الإعدادات
+// =============================================
+$clientId       = '1505715876287221860';
+$clientSecret   = 'VJ65TNLv4OWpdcOn9Wl9DPZq7kQT0pIX';
+$requiredGuildId = '1018879014150090832';// =============================================
+// استقبال البيانات
+// =============================================
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (empty($input['code'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'كود OAuth مفقود']);
-    exit();
+if (!$input || !isset($input['code'])) {
+    sendError('بيانات الطلب غير مكتملة');
 }
 
-$code = trim($input['code']);
+$code        = $input['code'];
+$redirectUri = $input['redirectUri'] ?? 'https://aladlyfamily.kesug.com/login.html';
 
-// ========== 1. تبادل الكود مع Discord ==========
-$tokenResponse = discordPost('https://discord.com/api/v10/oauth2/token', [
-    'client_id' => DISCORD_CLIENT_ID,
-    'client_secret' => DISCORD_CLIENT_SECRET,
-    'grant_type' => 'authorization_code',
-    'code' => $code,
-    'redirect_uri' => DISCORD_REDIRECT_URI,
-], true);
+// =============================================
+// 1. تبادل الكود للحصول على Access Token
+// =============================================
+$tokenData = exchangeCode($code, $redirectUri, $clientId, $clientSecret);
 
-if (empty($tokenResponse['access_token'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'فشل التحقق من Discord']);
-    exit();
+if (!$tokenData || isset($tokenData['error'])) {
+    sendError('فشل تبادل الكود: ' . ($tokenData['error_description'] ?? 'خطأ غير معروف'));
 }
 
-$accessToken = $tokenResponse['access_token'];
+$accessToken = $tokenData['access_token'];
 
-// ========== 2. جلب بيانات المستخدم ==========
-$user = discordGet('https://discord.com/api/v10/users/@me', $accessToken);
+// =============================================
+// 2. جلب بيانات المستخدم
+// =============================================
+$userData = fetchUserData($accessToken);
 
-if (empty($user['id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'فشل جلب بيانات المستخدم']);
-    exit();
+if (!$userData || isset($userData['message'])) {
+    sendError('فشل جلب بيانات المستخدم');
 }
 
-// ========== 3. إنشاء JWT (بدون تخزين الرتب) ==========
-$payload = [
-    'sub' => $user['id'],
-    'username' => $user['username'],
-    'avatar' => $user['avatar'] ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png" : null,
-    'iat' => time(),
-    'exp' => time() + SESSION_DURATION
-];
+// =============================================
+// 3. التحقق من العضوية + جلب الأدوار دفعة واحدة
+//    endpoint واحد يثبت العضوية ويعطي الأدوار
+// =============================================
+$userRoles  = [];
+$memberData = null;
 
-$jwt = createJWT($payload, JWT_SECRET);
+if ($requiredGuildId) {
+    $memberUrl  = "https://discord.com/api/users/@me/guilds/{$requiredGuildId}/member";
+    $memberData = makeDiscordRequest($memberUrl, 'GET', null, false, $accessToken);
 
-// ========== 4. الرد على العميل ==========
+    // إذا رجع roles = العضو موجود في السيرفر
+    if ($memberData && isset($memberData['roles'])) {
+        $userRoles = $memberData['roles'];
+    } else {
+        // فشل الـ endpoint = مو عضو في السيرفر أو رُفض الطلب
+        $errMsg = $memberData['message'] ?? 'غير معروف';
+        sendError('يجب أن تكون عضواً في سيرفر Discord الرسمي للدخول');
+    }
+}
+
+// =============================================
+// 4. إرجاع البيانات
+// =============================================
 echo json_encode([
     'success' => true,
-    'token' => $jwt,
     'user' => [
-        'id' => $user['id'],
-        'username' => $user['username'],
-        'avatar' => $payload['avatar'],
+        'id'            => $userData['id'],
+        'username'      => $userData['username'],
+        'discriminator' => $userData['discriminator'] ?? '0',
+        'avatar'        => $userData['avatar']
+            ? "https://cdn.discordapp.com/avatars/{$userData['id']}/{$userData['avatar']}.png"
+            : null,
+        'email'         => $userData['email'] ?? null,
+        'joinedAt'      => $memberData['joined_at'] ?? date('c'),
+        'roles'         => $userRoles
     ]
 ], JSON_UNESCAPED_UNICODE);
 
-// ========== دوال مساعدة للاتصال بـ Discord API ==========
-function discordGet($url, $token) {
-    return discordRequest($url, 'GET', null, $token, false);
+// =============================================
+// الدوال المساعدة
+// =============================================
+
+function exchangeCode($code, $redirectUri, $clientId, $clientSecret) {
+    return makeDiscordRequest(
+        'https://discord.com/api/v10/oauth2/token',
+        'POST',
+        [
+            'client_id'     => $clientId,
+            'client_secret' => $clientSecret,
+            'grant_type'    => 'authorization_code',
+            'code'          => $code,
+            'redirect_uri'  => $redirectUri
+        ],
+        true
+    );
 }
 
-function discordPost($url, $data, $isForm = false) {
-    return discordRequest($url, 'POST', $data, null, $isForm);
+function fetchUserData($accessToken) {
+    return makeDiscordRequest('https://discord.com/api/v10/users/@me', 'GET', null, false, $accessToken);
 }
 
-function discordRequest($url, $method, $data, $token, $isForm) {
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 15,
-        CURLOPT_SSL_VERIFYPEER => true,
-    ]);
+function makeDiscordRequest($url, $method = 'GET', $data = null, $isTokenExchange = false, $accessToken = null) {
+    $ch = curl_init();
 
-    $headers = ['User-Agent: AladlyBot/1.0'];
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
     if ($method === 'POST') {
         curl_setopt($ch, CURLOPT_POST, true);
-        if ($isForm) {
-            $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+        if ($isTokenExchange) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
         } else {
-            $headers[] = 'Content-Type: application/json';
-            if ($token) $headers[] = 'Authorization: Bearer ' . $token;
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            if ($data) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $accessToken
+            ]);
+        }
+    } else {
+        if ($accessToken) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $accessToken]);
         }
     }
 
-    if ($token && $method === 'GET') {
-        $headers[] = 'Authorization: Bearer ' . $token;
-    }
-
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    $response = curl_exec($ch);
+    $response  = curl_exec($ch);
+    $curlError = curl_error($ch);
     curl_close($ch);
 
-    return json_decode($response, true) ?? [];
+    if ($curlError) return ['error' => true, 'error_description' => $curlError];
+
+    return json_decode($response, true);
+}
+
+function sendError($message, $code = 400) {
+    http_response_code($code);
+    echo json_encode(['success' => false, 'error' => $message], JSON_UNESCAPED_UNICODE);
+    exit();
 }
 ?>
