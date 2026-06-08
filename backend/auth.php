@@ -21,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     sendError('هذه الوظيفة غير متاحة حالياً. استخدم تسجيل الدخول لتحديث الأدوار.', 400);
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendError('طريقة الطلب غير مسموحة', 405);
-}
+$method = $_SERVER['REQUEST_METHOD'];
+error_log('Request method: ' . $method);
+error_log('Request URI: ' . $_SERVER['REQUEST_URI']);
 
 // =============================================
 // الإعدادات
