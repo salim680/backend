@@ -17,7 +17,6 @@ define('DISCORD_CLIENT_ID',     '1505715876287221860');
 define('DISCORD_CLIENT_SECRET', 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM'); // في الباكاند فقط
 define('DISCORD_REDIRECT_URI',  'https://aladlyfamily.kesug.com/login.html');
 define('REQUIRED_GUILD_ID',     '1018879014150090832');
-define('JWT_SECRET',            'ضع_هنا_مفتاح_عشوائي_طويل_جداً_لا_يعرفه_أحد');
 define('SESSION_DURATION',      86400); // 24 ساعة بالثواني
 
 // =============================================
