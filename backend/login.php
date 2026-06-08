@@ -40,7 +40,7 @@ if (empty($code)) {
 
 // ========== إعدادات Discord ==========
 $client_id = '1505715876287221860';
-$client_secret = 'YOUR_CLIENT_SECRET_HERE'; // ضع الـ Client Secret الخاص بك هنا
+$client_secret = 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM'; // ضع الـ Client Secret الخاص بك هنا
 $redirect_uri = 'https://aladlyfamily.kesug.com/callback.html';
 
 // ========== تبادل الـ code مع Discord ==========
