@@ -1,46 +1,42 @@
 <?php
-// check-role.php - التحقق من رتب المستخدم عبر البوت
+// check-role.php
 require_once 'jwt.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Credentials: true');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// ========== 1. التحقق من صحة JWT ==========
+// تحقق من الـ JWT
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? '';
 
 if (!str_starts_with($authHeader, 'Bearer ')) {
     http_response_code(401);
-    echo json_encode(['hasRole' => false, 'error' => 'غير مصرح - لا يوجد توكن']);
+    echo json_encode(['hasRole' => false, 'error' => 'غير مصرح']);
     exit();
 }
 
-$token = substr($authHeader, 7);
+$token   = substr($authHeader, 7);
 $payload = verifyJWT($token, JWT_SECRET);
 
 if (!$payload) {
     http_response_code(401);
-    echo json_encode(['hasRole' => false, 'error' => 'جلسة منتهية - الرجاء تسجيل الدخول مرة أخرى']);
+    echo json_encode(['hasRole' => false, 'error' => 'جلسة منتهية']);
     exit();
 }
 
-// ========== 2. قراءة الرول المطلوب ==========
+// اقرأ الرول المطلوب
 $input = json_decode(file_get_contents('php://input'), true);
 $requiredRole = $input['role'] ?? '';
 
-if (empty($requiredRole)) {
-    echo json_encode(['hasRole' => false, 'error' => 'لم يتم تحديد الدور المطلوب']);
-    exit();
-}
-
-// ========== 3. الاتصال بالبوت لجلب رتب المستخدم ==========
+// جلب الرتب من البوت مباشرة
 $userId = $payload['sub'];
 $botApiUrl = "https://b-fo6h.onrender.com/api/check-role/" . $userId;
 
@@ -54,45 +50,27 @@ curl_setopt_array($ch, [
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
 curl_close($ch);
 
-// ========== 4. معالجة رد البوت ==========
-if ($httpCode !== 200 || !$response) {
-    error_log("Bot API Error: HTTP $httpCode - $curlError");
-    echo json_encode([
-        'hasRole' => false,
-        'error' => 'البوت غير متاح حالياً، حاول مرة أخرى'
-    ]);
+if ($httpCode !== 200) {
+    http_response_code(503);
+    echo json_encode(['hasRole' => false, 'error' => 'البوت غير متاح حالياً']);
     exit();
 }
 
 $botData = json_decode($response, true);
+$userRoles = $botData['success'] ? $botData['roles'] : [];
 
-if (!$botData || !isset($botData['success'])) {
-    echo json_encode([
-        'hasRole' => false,
-        'error' => 'استجابة غير صالحة من البوت'
-    ]);
-    exit();
+// التحقق من الرول
+$hasRole = false;
+if (!empty($requiredRole)) {
+    $hasRole = in_array($requiredRole, $userRoles);
 }
 
-if (!$botData['success']) {
-    echo json_encode([
-        'hasRole' => false,
-        'error' => $botData['error'] ?? 'فشل جلب الرتب من البوت'
-    ]);
-    exit();
-}
-
-$userRoles = $botData['roles'] ?? [];
-$hasRole = in_array($requiredRole, $userRoles);
-
-// ========== 5. الرد بالنتيجة ==========
 echo json_encode([
     'hasRole' => $hasRole,
     'username' => $payload['username'],
-    'requiredRole' => $requiredRole,
-    'userRoles' => $userRoles // اختياري: للتصحيح فقط، يمكن حذفه بعد التأكد من العمل
+    'userId' => $userId,
+    'roles' => $userRoles
 ], JSON_UNESCAPED_UNICODE);
 ?>
