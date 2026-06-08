@@ -1,6 +1,6 @@
 <?php
 
-define('JWT_SECRET', 'ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss');
+define('JWT_SECRET', 'ضع_هنا_مفتاح_عشوائي_طويل_جداً_لا_يعرفه_أحد');
 
 function createJWT(array $payload, string $secret): string {
     $header = base64url_encode(json_encode([
