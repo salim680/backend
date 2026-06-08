@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // الإعدادات
 // =============================================
 $clientId       = '1505715876287221860';
-$clientSecret   = 'VJ65TNLv4OWpdcOn9Wl9DPZq7kQT0pIX';
+$clientSecret   = 'vGmhcgg1IYHb5URdtWhthgJ5qI52UPtr';
 $requiredGuildId = '1018879014150090832';// =============================================
 // استقبال البيانات
 // =============================================
