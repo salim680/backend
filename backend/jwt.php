@@ -1,7 +1,8 @@
 <?php
-// jwt.php - دوال JWT فقط، لا يوجد كود OAuth هنا
+// jwt.php - دوال JWT فقط
+// ضع هذا الملف في نفس مجلد ملفات PHP الأخرى
 
-define('JWT_SECRET', 'ضع_مفتاح_عشوائي_طويل_جداً_هنا_لا_يعرفه_احد_@#$%^&*');
+define('JWT_SECRET', 'AladlyFamily_SecretKey_2024_@#$%^&*_Secure_12345');
 
 function createJWT(array $payload, string $secret): string {
     $header = base64url_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
