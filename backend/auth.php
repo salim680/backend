@@ -1,5 +1,5 @@
 <?php
-// auth.php - معالجة تسجيل الدخول فقط
+// auth.php - معالجة تسجيل الدخول عبر Discord
 require_once 'jwt.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -12,13 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// ========== إعدادات سرية ==========
+// ========== إعدادات Discord (سرية) ==========
 define('DISCORD_CLIENT_ID', '1505715876287221860');
 define('DISCORD_CLIENT_SECRET', 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM');
 define('DISCORD_REDIRECT_URI', 'https://aladlyfamily.kesug.com/login.html');
 define('SESSION_DURATION', 86400); // 24 ساعة
 
-// ========== استقبال الكود ==========
+// ========== استقبال الكود من الفرونت اند ==========
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (empty($input['code'])) {
@@ -29,7 +29,7 @@ if (empty($input['code'])) {
 
 $code = trim($input['code']);
 
-// ========== تبادل الكود مع Discord ==========
+// ========== 1. تبادل الكود مع Discord ==========
 $tokenResponse = discordPost('https://discord.com/api/v10/oauth2/token', [
     'client_id' => DISCORD_CLIENT_ID,
     'client_secret' => DISCORD_CLIENT_SECRET,
@@ -46,7 +46,7 @@ if (empty($tokenResponse['access_token'])) {
 
 $accessToken = $tokenResponse['access_token'];
 
-// ========== جلب بيانات المستخدم ==========
+// ========== 2. جلب بيانات المستخدم ==========
 $user = discordGet('https://discord.com/api/v10/users/@me', $accessToken);
 
 if (empty($user['id'])) {
@@ -55,7 +55,7 @@ if (empty($user['id'])) {
     exit();
 }
 
-// ========== إنشاء JWT - بدون تخزين الرتب ==========
+// ========== 3. إنشاء JWT (بدون تخزين الرتب) ==========
 $payload = [
     'sub' => $user['id'],
     'username' => $user['username'],
@@ -66,7 +66,7 @@ $payload = [
 
 $jwt = createJWT($payload, JWT_SECRET);
 
-// ========== الرد ==========
+// ========== 4. الرد على العميل ==========
 echo json_encode([
     'success' => true,
     'token' => $jwt,
@@ -77,7 +77,7 @@ echo json_encode([
     ]
 ], JSON_UNESCAPED_UNICODE);
 
-// ========== دوال مساعدة ==========
+// ========== دوال مساعدة للاتصال بـ Discord API ==========
 function discordGet($url, $token) {
     return discordRequest($url, 'GET', null, $token, false);
 }
