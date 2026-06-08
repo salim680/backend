@@ -1,27 +1,24 @@
 <?php
-// auth.php - Backend فقط، لا يُشارك مع الفرونت اند أبداً
+// auth.php - معالجة تسجيل الدخول فقط
+require_once 'jwt.php';
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com'); // محدد وليس *
+header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once 'jwt.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit(); }
+// ========== إعدادات سرية ==========
+define('DISCORD_CLIENT_ID', '1505715876287221860');
+define('DISCORD_CLIENT_SECRET', 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM');
+define('DISCORD_REDIRECT_URI', 'https://aladlyfamily.kesug.com/login.html');
+define('SESSION_DURATION', 86400); // 24 ساعة
 
-// =============================================
-// إعدادات سرية - لا تضعها في الفرونت اند أبداً
-// =============================================
-define('DISCORD_CLIENT_ID',     '1505715876287221860');
-define('DISCORD_CLIENT_SECRET', 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM'); // في الباكاند فقط
-define('DISCORD_REDIRECT_URI',  'https://aladlyfamily.kesug.com/login.html');
-define('REQUIRED_GUILD_ID',     '1018879014150090832');
-define('SESSION_DURATION',      86400); // 24 ساعة بالثواني
-
-// =============================================
-// استقبال الكود
-// =============================================
+// ========== استقبال الكود ==========
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (empty($input['code'])) {
@@ -32,15 +29,13 @@ if (empty($input['code'])) {
 
 $code = trim($input['code']);
 
-// =============================================
-// 1. تبادل الكود — السر يبقى في الباكاند
-// =============================================
+// ========== تبادل الكود مع Discord ==========
 $tokenResponse = discordPost('https://discord.com/api/v10/oauth2/token', [
-    'client_id'     => DISCORD_CLIENT_ID,
-    'client_secret' => DISCORD_CLIENT_SECRET, // لا يصل للمتصفح أبداً
-    'grant_type'    => 'authorization_code',
-    'code'          => $code,
-    'redirect_uri'  => DISCORD_REDIRECT_URI,
+    'client_id' => DISCORD_CLIENT_ID,
+    'client_secret' => DISCORD_CLIENT_SECRET,
+    'grant_type' => 'authorization_code',
+    'code' => $code,
+    'redirect_uri' => DISCORD_REDIRECT_URI,
 ], true);
 
 if (empty($tokenResponse['access_token'])) {
@@ -51,9 +46,7 @@ if (empty($tokenResponse['access_token'])) {
 
 $accessToken = $tokenResponse['access_token'];
 
-// =============================================
-// 2. جلب بيانات المستخدم
-// =============================================
+// ========== جلب بيانات المستخدم ==========
 $user = discordGet('https://discord.com/api/v10/users/@me', $accessToken);
 
 if (empty($user['id'])) {
@@ -62,56 +55,29 @@ if (empty($user['id'])) {
     exit();
 }
 
-// =============================================
-// 3. التحقق من العضوية وجلب الأدوار — في الباكاند
-// =============================================
-$member = discordGet(
-    "https://discord.com/api/v10/users/@me/guilds/" . REQUIRED_GUILD_ID . "/member",
-    $accessToken
-);
-
-if (empty($member['roles'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'يجب أن تكون عضواً في السيرفر الرسمي']);
-    exit();
-}
-
-$roles = $member['roles']; // الأدوار من Discord مباشرة، لا من الفرونت اند
-
-// =============================================
-// 4. إنشاء JWT موقّع — لا يمكن تزويره بدون JWT_SECRET
-// =============================================
+// ========== إنشاء JWT - بدون تخزين الرتب ==========
 $payload = [
-    'sub'      => $user['id'],       // Discord ID
+    'sub' => $user['id'],
     'username' => $user['username'],
-    'avatar'   => $user['avatar']
-        ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
-        : null,
-    'iat'      => time(),
-    'exp'      => time() + SESSION_DURATION
+    'avatar' => $user['avatar'] ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png" : null,
+    'iat' => time(),
+    'exp' => time() + SESSION_DURATION
 ];
 
 $jwt = createJWT($payload, JWT_SECRET);
 
-// =============================================
-// 5. الرد — نرسل JWT فقط، لا secrets
-// =============================================
+// ========== الرد ==========
 echo json_encode([
     'success' => true,
-    'token'   => $jwt,
-    'user'    => [
-        'id'       => $user['id'],
+    'token' => $jwt,
+    'user' => [
+        'id' => $user['id'],
         'username' => $user['username'],
-        'avatar'   => $payload['avatar'],
-        // لا نرسل الأدوار للفرونت اند — يتحقق منها الباكاند
+        'avatar' => $payload['avatar'],
     ]
 ], JSON_UNESCAPED_UNICODE);
 
-
-// =============================================
-// دوال مساعدة
-// =============================================
-
+// ========== دوال مساعدة ==========
 function discordGet($url, $token) {
     return discordRequest($url, 'GET', null, $token, false);
 }
@@ -124,7 +90,7 @@ function discordRequest($url, $method, $data, $token, $isForm) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_TIMEOUT => 15,
         CURLOPT_SSL_VERIFYPEER => true,
     ]);
 
@@ -152,5 +118,4 @@ function discordRequest($url, $method, $data, $token, $isForm) {
 
     return json_decode($response, true) ?? [];
 }
-
-// JWT بسيط بدون مكتبة خارجية
+?>
