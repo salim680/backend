@@ -111,7 +111,7 @@ if ($user_http_code !== 200) {
 $user_data = json_decode($user_response, true);
 $user_id = $user_data['id'] ?? '';
 $username = $user_data['username'] ?? 'Unknown';
-$avatar = $user_data['avatar'] ? "https://cdn.discordapp.com/avatars/{$user_id}/{$avatar}.png" : '';
+$avatar = !empty($user_data['avatar']) ? "https://cdn.discordapp.com/avatars/{$user_id}/{$user_data['avatar']}.png" : '';
 
 // ========== إنشاء جلسة للمستخدم ==========
 session_start();
