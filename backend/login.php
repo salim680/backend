@@ -1,5 +1,6 @@
 <?php
-// login.php - نسخة مبسطة وآمنة
+session_start(); // MUST BE FIRST
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
 header('Access-Control-Allow-Credentials: true');
@@ -38,9 +39,8 @@ if (empty($code)) {
 }
 
 // ========== إعدادات Discord ==========
-// ضع بيانات تطبيقك الصحيحة هنا
 $client_id = '1505715876287221860';
-$client_secret = 'WEE9DBW6NrJWfET9vL40u1D2lCjj9bOM'; // <- هذا مهم جداً! ضع الـ Client Secret حقك
+$client_secret = 'YOUR_CLIENT_SECRET_HERE'; // ضع الـ Client Secret الخاص بك هنا
 $redirect_uri = 'https://aladlyfamily.kesug.com/callback.html';
 
 // ========== تبادل الـ code مع Discord ==========
@@ -53,27 +53,24 @@ $token_data = [
     'redirect_uri' => $redirect_uri,
 ];
 
-// استخدام cURL لطلب التوكن
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $token_url);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($token_data));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // فقط للتجربة على بعض الاستضافات
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 $response = curl_exec($ch);
 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curl_error = curl_error($ch);
 curl_close($ch);
 
-// التحقق من أخطاء cURL
 if ($curl_error) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'cURL Error: ' . $curl_error]);
     exit();
 }
 
-// تحليل استجابة Discord
 $token_response = json_decode($response, true);
 
 if ($http_code !== 200) {
@@ -111,21 +108,23 @@ if ($user_http_code !== 200) {
 $user_data = json_decode($user_response, true);
 $user_id = $user_data['id'] ?? '';
 $username = $user_data['username'] ?? 'Unknown';
-$avatar = !empty($user_data['avatar']) ? "https://cdn.discordapp.com/avatars/{$user_id}/{$user_data['avatar']}.png" : '';
 
-// ========== إنشاء جلسة للمستخدم ==========
-session_start();
+// تصحيح خطأ $avatar
+$avatar = '';
+if (!empty($user_data['avatar'])) {
+    $avatar = "https://cdn.discordapp.com/avatars/{$user_id}/{$user_data['avatar']}.png";
+}
+
+// ========== تحديد صلاحيات المستخدم ==========
+$admin_ids = ['1505715876287221860', '880450066438033479']; // أضف أيدي الأدمن هنا
+$roles = in_array($user_id, $admin_ids) ? ['1506606160059564232'] : [];
+
+// ========== إنشاء توكن عشوائي ==========
 $auth_token = bin2hex(random_bytes(32));
 
 $_SESSION['auth_token'] = $auth_token;
 $_SESSION['user_id'] = $user_id;
 $_SESSION['username'] = $username;
-
-// ========== تحديد صلاحيات المستخدم ==========
-// هنا تحدد إذا كان المستخدم أدمن أم لا
-// حالياً أضفنا أيدي الأدمن المؤقت
-$admin_ids = ['1505715876287221860']; // ضع أيدي المستخدمين الأدمن هنا
-$roles = in_array($user_id, $admin_ids) ? ['1506606160059564232'] : [];
 
 // ========== إرجاع الاستجابة الناجحة ==========
 echo json_encode([
