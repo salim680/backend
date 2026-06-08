@@ -1,44 +1,48 @@
 <?php
 // check-role.php
-header('Content-Type: application/json');
+require_once 'auth.php'; // للحصول على verifyJWT و JWT_SECRET
+
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit(); }
 
-session_start();
-
-// التحقق من التوكن
+// تحقق من الـ JWT
 $headers = getallheaders();
-$auth_header = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-$token = preg_replace('/Bearer\s/', '', $auth_header);
+$authHeader = $headers['Authorization'] ?? '';
 
-if (empty($token) || !isset($_SESSION['auth_token']) || $_SESSION['auth_token'] !== $token) {
+if (!str_starts_with($authHeader, 'Bearer ')) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['hasRole' => false, 'error' => 'غير مصرح']);
     exit();
 }
 
-$userId = $_GET['userId'] ?? '';
-$roleId = $_GET['roleId'] ?? '';
+$token   = substr($authHeader, 7);
+$payload = verifyJWT($token, JWT_SECRET);
 
-if (empty($userId) || empty($roleId)) {
-    echo json_encode(['success' => false, 'error' => 'Missing parameters']);
+if (!$payload) {
+    http_response_code(401);
+    echo json_encode(['hasRole' => false, 'error' => 'جلسة منتهية']);
     exit();
 }
 
-// قائمة رتب الأدمن المسموح بها
-$admin_role_id = '1506606160059564232';
-$hasRole = ($roleId === $admin_role_id && isset($_SESSION['user_id']) && $_SESSION['user_id'] === $userId);
+// اقرأ الرول المطلوب
+$input = json_decode(file_get_contents('php://input'), true);
+$requiredRole = $input['role'] ?? '';
+
+if (empty($requiredRole)) {
+    echo json_encode(['hasRole' => false, 'error' => 'لم يُحدد الدور']);
+    exit();
+}
+
+// الأدوار موجودة في الـ JWT — لا يستطيع المستخدم تعديلها
+$userRoles = $payload['roles'] ?? [];
+$hasRole   = in_array($requiredRole, $userRoles);
 
 echo json_encode([
-    'success' => true,
-    'hasRole' => $hasRole,
-    'userId' => $userId,
-    'roleId' => $roleId
-]);
+    'hasRole'  => $hasRole,
+    'username' => $payload['username']
+], JSON_UNESCAPED_UNICODE);
 ?>
