@@ -87,7 +87,6 @@ $payload = [
     'avatar'   => $user['avatar']
         ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
         : null,
-    'roles'    => $roles,            // أدوار حقيقية من Discord
     'iat'      => time(),
     'exp'      => time() + SESSION_DURATION
 ];
