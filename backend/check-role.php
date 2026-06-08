@@ -42,7 +42,8 @@ $userRoles = $payload['roles'] ?? [];
 $hasRole   = in_array($requiredRole, $userRoles);
 
 echo json_encode([
-    'hasRole'  => $hasRole,
-    'username' => $payload['username']
+    'hasRole'      => $hasRole,
+    'username'     => $payload['username'],
+    'requiredRole' => $requiredRole,
+    'userRoles'    => $userRoles
 ], JSON_UNESCAPED_UNICODE);
-?>
