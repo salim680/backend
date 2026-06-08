@@ -1,6 +1,6 @@
 <?php
 // check-role.php
-require_once 'auth.php'; // للحصول على verifyJWT و JWT_SECRET
+require_once 'jwt.php'; // للحصول على verifyJWT و JWT_SECRET
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://aladlyfamily.kesug.com');
